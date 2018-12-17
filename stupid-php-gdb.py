@@ -9,17 +9,17 @@ import sys
 
 print("\033[1m\033[41m[+] Stupid GDB Helper for PHP loaded! (by @TheXC3LL)\033[0m")
 
-class printzval(gdb.Command):
+class printzval5(gdb.Command):
         "Print zval content"
         def __init__(self):
-                super(printzval, self).__init__("printzval", gdb.COMMAND_SUPPORT, gdb.COMPLETE_NONE, True)
+                super(printzval5, self).__init__("printzval5", gdb.COMMAND_SUPPORT, gdb.COMPLETE_NONE, True)
         def invoke(self, arg, from_tty):
                 gdb.execute("print *(zval *)" + arg)
 
-class pprintzval(gdb.Command):
+class pprintzval5(gdb.Command):
         "Print Zval content beautified"
         def __init__(self):
-                 super(pprintzval, self).__init__("pprintzval", gdb.COMMAND_SUPPORT, gdb.COMPLETE_NONE, True)
+                 super(pprintzval5, self).__init__("pprintzval5", gdb.COMMAND_SUPPORT, gdb.COMPLETE_NONE, True)
         def invoke(self, arg, from_tty):
                 payload = "((zval *) " + arg + ")"
                 sys.stdout.write("\033[33m" + arg + " \033[1m")
@@ -181,5 +181,5 @@ class zifArgs(gdb.Command):
 
 zifArgs()
 zifArgsError()
-pprintzval()
-printzval()
+pprintzval5()
+printzval5()
