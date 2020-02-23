@@ -9,42 +9,6 @@ import sys
 
 print("\033[1m\033[41m[+] Stupid GDB Helper for PHP loaded! (by @TheXC3LL)\033[0m")
 
-class printzval5(gdb.Command):
-        "Print zval content"
-        def __init__(self):
-                super(printzval5, self).__init__("printzval5", gdb.COMMAND_SUPPORT, gdb.COMPLETE_NONE, True)
-        def invoke(self, arg, from_tty):
-                gdb.execute("print *(zval *)" + arg)
-
-class pprintzval5(gdb.Command):
-        "Print Zval content beautified"
-        def __init__(self):
-                 super(pprintzval5, self).__init__("pprintzval5", gdb.COMMAND_SUPPORT, gdb.COMPLETE_NONE, True)
-        def invoke(self, arg, from_tty):
-                payload = "((zval *) " + arg + ")"
-                sys.stdout.write("\033[33m" + arg + " \033[1m")
-                varType = str(gdb.parse_and_eval(payload + "->type"))
-                varType = int(varType.split(" ")[0])
-                if varType > 5 and varType != 15:
-                        sys.stdout.write("\033[36mrefcount=")
-                        sys.stdout.write("\033[31m" + str(gdb.parse_and_eval(payload + "->refcount__gc")) + " ")
-                if varType == 0:
-                        sys.stdout.write("\033[31mUNDEF\n")
-                if varType == 1:
-                        sys.stdout.write("\033[37mNULL\n")
-                if varType == 2:
-                        sys.stdout.write("\033[33mBool: \033[31mFALSE\n")
-                if varType == 3:
-                        sys.stdout.write("\033[33mBool: \033[32mTRUE\n")
-                if varType == 4:
-                        sys.stdout.write("\033[33mLong: \033[35m+ " + str(gdb.parse_and_eval(payload + "->value->lval")) + "\n")
-                if varType == 5:
-                        sys.stdout.write("\033[33mDouble: \033[35m+ " + str(gdb.parse_and_eval(payload + "->value->dval")) + "\n")
-                if varType == 6:
-                        sys.stdout.write("\033[33mString(\033[31m" + str(gdb.parse_and_eval(payload + "->value->str->len"))+"\033[33m): \033[35m" + str(gdb.parse_and_eval(payload + "->value->str->val"))+"\n")
-                #To be completed :)
-
-                sys.stdout.flush()
 
 
 class zifArgsError(gdb.Command):
@@ -67,7 +31,7 @@ class zifArgsError(gdb.Command):
             number = output[output.index("at least ")+9:output.index("at least ")+10]
         except:
             number = output[output.index("exactly ")+8:output.index("exactly")+9]
-        print("\033[33m\033[1m" + arg+ "(\033[31m" + number + "\033[33m): \033[0m")
+        #print("\033[33m\033[1m" + arg+ "(\033[31m" + number + "\033[33m): \033[0m")
         params = []
         infered = []
         i = 0
@@ -103,7 +67,7 @@ class zifArgsError(gdb.Command):
                     params[i] = "1337"
                     infered.append("\033[36mINTEGER")
                 i += 1
-                print(params)
+                #print(params)
             except:
                 if len(infered) > 0:
                     print("\033[1m" + ' '.join(infered) + "\033[0m")
@@ -137,11 +101,16 @@ class zifArgs(gdb.Command):
             if "ZEND_PARSE_PARAMETERS_END" not in sourceLines:
                 size += 10
                 gdb.execute("set listsize " + str(size))
+            elif "zend_parse_parameters_none" in sourceLines:
+                gdb.execute("set listsize 10")
+                print("\033[90mVOID\033[0m")
+                return
             else:
                 gdb.execute("set listsize 10")
                 break
         try:
             chunk = sourceLines[sourceLines.index("_START"):sourceLines.rindex("_END")].split("\n")
+            #print(chunk)
         except:
             print("\033[31m\033[1mParameters not found. Try zifargs_old <function>\033[0m")
             return
@@ -149,6 +118,12 @@ class zifArgs(gdb.Command):
         for x in chunk:
             if "Z_PARAM_ARRAY" in x:
                 params.append("\033[31mARRAY")
+            if "Z_PARAM_ARRAY_OR_OBJECT" in x:
+                params.append("\033[31mARRAY_OR_OBJECT")
+            if "Z_PARAM_ARRAY_HT" in x:
+                params.append("\033[31mARRAY_HT")
+            if "Z_PARAM_ARRAY_OR_OBJECT_HT" in x:
+                params.append("\033[31mARRAY_OR_OBJECT_HT")
             if "Z_PARAM_BOOL" in x:
                 params.append("\033[32mBOOL")
             if "Z_PARAM_FUNC" in x:
@@ -165,12 +140,16 @@ class zifArgs(gdb.Command):
                 params.append("\033[39mRESOURCE")
             if "Z_PARAM_STR" in x:
                 params.append("\033[35mSTRING")
+            if "Z_PARAM_PATH_STR" in x:
+                params.append("\033[31mPATH")
             if "Z_PARAM_CLASS" in x:
                 params.append("\033[37mCLASS")
             if "Z_PARAM_PATH" in x:
                 params.append("\033[31mPATH")
             if "Z_PARAM_OPTIONAL" in x:
                 params.append("\033[37mOPTIONAL")
+            if "Z_PARAM_VARIADIC" in x:
+                params.append("\033[90mVARIADIC")
         if len(params) == 0:
             print("\033[31m\033[1mParameters not found. Try zifargs_old <function> or zifargs_error <function>\033[0m")
             return
@@ -181,5 +160,3 @@ class zifArgs(gdb.Command):
 
 zifArgs()
 zifArgsError()
-pprintzval5()
-printzval5()
